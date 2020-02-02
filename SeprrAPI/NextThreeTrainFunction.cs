@@ -22,7 +22,7 @@ namespace SeprrAPI
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("GetRegionalRailRequest Start.");
+            log.LogInformation($"GetRegionalRailRequest Start");
 
             // Get request body and parse it into json
             string bodyContent = await req.ReadAsStringAsync();
@@ -33,6 +33,7 @@ namespace SeprrAPI
 
             //read the incomimg header
             var command = incoming.text;
+            log.LogInformation($"Request Query {command}");
 
             // first 2 characters are the trigger command
             string commandHeader =
@@ -103,6 +104,8 @@ namespace SeprrAPI
             attachment.fields = filedList;
             attachmentList.Add(attachment);
             slackResp.attachments = attachmentList;
+
+            log.LogInformation("GetRegionalRailRequest Complete.");
 
             //response return
             return new OkObjectResult(slackResp);
