@@ -81,7 +81,7 @@ namespace SeprrAPI
             var attachmentList = new List<Attachments>();
             var attachment = new Attachments();
             attachment.color = "#1E98D1";
-            attachment.footer = "© 2017";
+            attachment.footer = "© 2019";
             attachment.ts = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
             var filedList = new List<Fields>();
 
