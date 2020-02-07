@@ -43,7 +43,7 @@ stages:
         deployToSlotOrASE: true
         resourceGroupName: 'AzureFunctions-EastUS'
         slotName: 'production'
-        package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+        package: '$(System.ArtifactsDirectory)/**/*.zip'
         deploymentMethod: 'auto'
 
     - task: ArchiveFiles@2
