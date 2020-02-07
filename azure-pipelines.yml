@@ -6,9 +6,13 @@
 trigger:
 - master
 
+
+
 variables:
   # Azure Resource Manager connection created during pipeline creation
   azureSubscription: '00937686-a55e-4fb6-bf8e-e0e518211562'
+
+  appName: 'SeprrAPI'
 
   # Function app name
   functionAppName: 'SeprrAPI'
@@ -30,13 +34,17 @@ stages:
       vmImage: $(vmImageName)
 
     steps:
-    - task: DotNetCoreCLI@2
+    - task: AzureFunctionApp@1
       displayName: Build
       inputs:
-        command: 'build'
-        projects: |
-          $(workingDirectory)/*.csproj
-        arguments: --output $(System.DefaultWorkingDirectory)/publish_output --configuration Release
+        azureSubscription: $(azureSubscription)
+        appType: 'functionApp'
+        appName: $(appName)
+        deployToSlotOrASE: true
+        resourceGroupName: 'AzureFunctions-EastUS'
+        slotName: 'production'
+        package: '$(System.DefaultWorkingDirectory)/**/*.zip'
+        deploymentMethod: 'auto'
 
     - task: ArchiveFiles@2
       displayName: 'Archive files'
