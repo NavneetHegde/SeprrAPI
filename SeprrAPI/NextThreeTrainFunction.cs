@@ -17,77 +17,158 @@ namespace SeprrAPI
 {
     public static class NextThreeTrainFunction
     {
+        /// <summary>
+        /// Sends next three available septa regional rail.
+        /// </summary>
+        /// <param name="request">Slack request in the format as "rr sourceStation-destinationStation"</param>
+        /// <param name="log"></param>
+        /// <returns>Slack fomatted response</returns>
+        /// <example>
+        /// Slack Request :
+        /// rr dev-30
+        /// Slack Response :
+        /// Next available trains
+        ///    On Paoli/Thorndale Line From Devon To 30th Street Station
+        ///    Train # 562
+        ///    Departure time :  1:22PM  | delayed by 3 mins
+        ///    Train # 564
+        ///    Departure time :  2:04PM  | On time
+        ///    Train # 566
+        ///    Departure time :  2:23PM  | On time
+        ///    Seprr © 2020 | Feb 14th
+        /// </example>
         [FunctionName("NextThreeTrainFunction")]
         public static async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest request,
             ILogger log)
         {
             log.LogInformation($"GetRegionalRailRequest Start");
 
-            // Get request body and parse it into json
-            string bodyContent = await req.ReadAsStringAsync();
-            var values = HttpUtility.ParseQueryString(bodyContent);
-            var jsonContent = JsonConvert.SerializeObject(values.AllKeys.ToDictionary(k => k, k => values[k]));
-
-            var incoming = JsonConvert.DeserializeObject<SlackRequest>(jsonContent);
-
-            //read the incomimg header
-            var command = incoming.text;
-            log.LogInformation($"Request Query {command}");
-
-            // first 2 characters are the trigger command
-            string commandHeader =
-            !String.IsNullOrWhiteSpace(command) && command.Length >= 2
-            ? command.Substring(0, 2)
-            : command;
-
-            // call septa api to fetch the latest details
-            var responseMsg = String.Empty;
-            var FromStation = "30th Street Station";
-            var ToStation = "30th Street Station";
-            if (commandHeader.ToLower() == "rr")
+            SlackResponse slackResponse = null;
+            try
             {
-                string commandStation =
-                    !String.IsNullOrWhiteSpace(command) && command.Length > 2
-                    ? command.Substring(2, command.Length - 2).Trim()
-                    : "-30th Street Station";
+                // Get request body and parse it into json
+                string bodyContent = await request.ReadAsStringAsync();
+                var values = HttpUtility.ParseQueryString(bodyContent);
+                var jsonContent = JsonConvert.SerializeObject(values.AllKeys.ToDictionary(k => k, k => values[k]));
 
-                //format string in 
-                string[] dataStation = commandStation.Split(new[] { '-' }, 2);
+                var incoming = JsonConvert.DeserializeObject<SlackRequest>(jsonContent);
 
-                //if from station exists
-                if (dataStation.ElementAtOrDefault(0) != null && !string.IsNullOrWhiteSpace(dataStation[0]))
+                //read the incomimg header
+                var command = incoming.text;
+                log.LogInformation($"Request Query {command}");
+
+                // read request : First 2 characters are the trigger command
+                // rr : trigger command in slack
+                string commandHeader =
+                !String.IsNullOrWhiteSpace(command) && command.Length >= 2
+                ? command.Substring(0, 2)
+                : command;
+
+                // call septa api to fetch the latest details
+                var responseMsg = String.Empty;
+                var FromStation = "30th Street Station"; // default/falback station
+                var ToStation = "30th Street Station";  // default/falback station
+                if (commandHeader.ToLower() == "rr")
                 {
-                    FromStation = ResolveStationName(dataStation[0].Trim());
+                    string commandStation =
+                        !String.IsNullOrWhiteSpace(command) && command.Length > 2
+                        ? command.Substring(2, command.Length - 2).Trim()
+                        : "-30th Street Station";
+
+                    // request string fomat parsing 
+                    // rr {sourceDestination}-{destinationStation}
+                    string[] dataStation = commandStation.Split(new[] { '-' }, 2);
+
+                    //if source/origination station exists
+                    if (dataStation.ElementAtOrDefault(0) != null && !string.IsNullOrWhiteSpace(dataStation[0]))
+                    {
+                        FromStation = ResolveStationName(dataStation[0].Trim());
+                    }
+
+                    //To Station
+                    //if from station exists
+                    if (dataStation.ElementAtOrDefault(1) != null && !string.IsNullOrWhiteSpace(dataStation[1]))
+                    {
+                        ToStation = ResolveStationName(dataStation[1].Trim());
+                    }
+                    responseMsg = CallSeptaApi(log, FromStation, ToStation);
                 }
 
-                //To Station
-                //if from station exists
-                if (dataStation.ElementAtOrDefault(1) != null && !string.IsNullOrWhiteSpace(dataStation[1]))
-                {
-                    ToStation = ResolveStationName(dataStation[1].Trim());
-                }
+                // format slack response 
+                slackResponse = FormatSlackResponse(responseMsg, FromStation, ToStation);
 
-                responseMsg = CallSeptaApi(log, FromStation, ToStation);
+                log.LogInformation("GetRegionalRailRequest Complete.");
+            }
+            catch (Exception ex)
+            {
+                log.LogError(ex, ex.Message, null);
+
+                // return error response
+                slackResponse = FormatErrorSlackResponse(ex.Message);
+                return new OkObjectResult(slackResponse);
             }
 
-            //create 
-            var slackResp = new SlackResponse();
-            slackResp.text = "Next available trains";
+            // return success response
+            return new OkObjectResult(slackResponse);
+        }
 
+        /// <summary>
+        /// Format Slack error response
+        /// </summary>
+        /// <param name="errorDescription">Error to be sent to slack for display</param>
+        /// <returns>Slack formatted  error response</returns>
+        private static SlackResponse FormatErrorSlackResponse(string errorDescription)
+        {
+            var slackResponse = new SlackResponse();
+            slackResponse.text = "Next available trains";
 
-            var attachmentResp = JsonConvert.DeserializeObject<List<ApiResponse>>(responseMsg);
+            // create attachment object 
+            var attachmentList = new List<Attachments>();
+            var attachment = new Attachments();
+            attachment.color = "#1E98D1";
+            attachment.footer = "Seprr © 2020";
+            attachment.ts = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
+            var fieldList = new List<Fields>();
+
+            attachment.text = $"*There has been an error processing your request. Please try again.*";
+
+            var field = new Fields();
+            field.value = $"* Details:* {errorDescription}";
+            field.title = $"Error Info # ";
+            fieldList.Add(field);
+
+            attachment.fields = fieldList;
+            attachmentList.Add(attachment);
+            slackResponse.attachments = attachmentList;
+            return slackResponse;
+        }
+
+        /// <summary>
+        /// Format slack response
+        /// </summary>
+        /// <param name="responseMessage">Response received from Septa API</param>
+        /// <param name="sourceStation">string</param>
+        /// <param name="destStation">string</param>
+        /// <returns>Slack formatted response for propoer slack rendering of response by slack channel</returns>
+        private static SlackResponse FormatSlackResponse(string responseMessage, string sourceStation, string destStation)
+        {
+            var slackResponse = new SlackResponse();
+            slackResponse.text = "Next available trains";
+
+            var attachmentResponse = JsonConvert.DeserializeObject<List<ApiResponse>>(responseMessage);
+
             //create attachment object 
             var attachmentList = new List<Attachments>();
             var attachment = new Attachments();
             attachment.color = "#1E98D1";
-            attachment.footer = "© 2021";
+            attachment.footer = "Seprr © 2020";
             attachment.ts = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
-            var filedList = new List<Fields>();
+            var fieldList = new List<Fields>();
 
-            foreach (var item in attachmentResp)
+            foreach (var item in attachmentResponse)
             {
-                attachment.text = $"*On* {item.orig_line} Line *From* {FromStation} *To* {ToStation}";
+                attachment.text = $"*On* {item.orig_line} Line *From* {sourceStation} *To* {destStation}";
 
                 var filed = new Fields();
                 if (item.orig_delay.ToLower() == "on time")
@@ -99,33 +180,44 @@ namespace SeprrAPI
                     filed.value = $"*Departure time : {item.orig_departure_time}*  | `delayed by {item.orig_delay}`";
                 }
                 filed.title = $"Train # {item.orig_train}";
-                filedList.Add(filed);
+                fieldList.Add(filed);
             }
-            attachment.fields = filedList;
+            attachment.fields = fieldList;
             attachmentList.Add(attachment);
-            slackResp.attachments = attachmentList;
-
-            log.LogInformation("GetRegionalRailRequest Complete.");
-
-            //response return
-            return new OkObjectResult(slackResp);
+            slackResponse.attachments = attachmentList;
+            return slackResponse;
         }
 
+        /// <summary>
+        /// Makes a resy call  to Septa api
+        /// </summary>
+        /// <param name="log">ILogger</param>
+        /// <param name="sourceStation">origination station name</param>
+        /// <param name="destStation">Destination station name</param>
+        /// <returns>Next three station timing with any delay</returns>
         private static string CallSeptaApi(ILogger log, string sourceStation, string destStation)
         {
+            log.LogInformation($"Calling Septa API start. from {sourceStation} to {destStation}");
             using (var client = new HttpClient())
             {
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
                 client.DefaultRequestHeaders.Add("User-Agent", "NavneetFunctions");
 
-                //Copy paste uri from Slack
+                // septa train api
                 var uri = $"http://www3.septa.org/hackathon/NextToArrive/{sourceStation}/{destStation}/3";
 
                 HttpResponseMessage response = client.GetAsync(uri).Result;
+                log.LogInformation($"Calling Septa API complete. Result {response?.StatusCode}");
+
                 return response.Content.ReadAsStringAsync().Result;
             }
+
         }
 
+        /// Resolve station name based on input query
+        /// </summary>
+        /// <param name="stationName">station name query</param>
+        /// <returns>Resolved station name, if not resolved than default station name Default station name #0th Street Station </returns>
         private static string ResolveStationName(string stationName)
         {
             switch (stationName.Replace(" ", "").ToLower())
