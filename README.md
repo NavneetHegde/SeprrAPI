@@ -31,7 +31,10 @@ Currently it supports Slack client only. When a channel member slacks a formatte
   5. Error result : Error response received from azure function
   
      ![Image of Error](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/error.png?raw=true)
-  
+     
+  6. [Join slack channel for testing](https://join.slack.com/t/navneethegde/shared_invite/enQtOTQ2MDI2NDY5NjAxLWE1MTc2ZjJlNjQxZDZkZTRmZWRiODhmZWViNTZkZjYzNDVlYTJjOTY5MWE1MTk1YmFkYTQ4NmM3ODgyYTk2Yjk
+ )
+                           
 ## Building & Running
 Download the dev branch, build and deploy it to the azure portal. Copy the azure function url and configure slack to start using the functionality,
 
