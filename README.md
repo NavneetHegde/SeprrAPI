@@ -7,7 +7,8 @@ All new development is done on the dev branch. More stable versions of the sampl
 ## Integration
 ### [Slack Support] - 
 Currently it supports Slack client only. When a channel member slacks a formatted message, the outgoing webhook will send an HTTP GET request notification to the Webhook URL with the details to receive formatted response from azure function.
-
+### [3rd Party Septa API] - 
+  https://www3.septa.org/api/
 ### [Slack Integration Setting] 
   
   1. Add Outgoing WebHooks : Add new outgoing webhook to slack to communicate with azure function via trigger
