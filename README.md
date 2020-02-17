@@ -9,22 +9,22 @@ All new development is done on the dev branch. More stable versions of the sampl
 
 * [Slack Integration] 
   
-  Add Outgoing WebHooks : Add new outgoing webhook to slack to communicate with azure function via trigger
+  1.  Add Outgoing WebHooks : Add new outgoing webhook to slack to communicate with azure function via trigger
 
-    ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/AddWebHookApp.png?raw=true)
+     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/AddWebHookApp.png?raw=true)
       
-  Configure Azure Function : Set the Url as copied from azure portal where fucntion is deployed 
+  2.  Configure Azure Function : Set the Url as copied from azure portal where fucntion is deployed 
     
-    ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureWebHook.png?raw=true)
+     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureWebHook.png?raw=true)
  
-  Configure Slack Trigger : This word will be used as a trigger from slack app to invoke azure function via webhook
+  3.  Configure Slack Trigger : This word will be used as a trigger from slack app to invoke azure function via webhook
     
-    ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureTrigger.png?raw=true)
+     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureTrigger.png?raw=true)
       
-  Request azure function from slack : Channel members can request next available trains from slack using the trigger from configured 
-  channel to view the next three available trains on the specific route.
+  4.  Request azure function from slack : Channel members can request next available trains from slack using the trigger from configured 
+      channel to view the next three available trains on the specific route.
     
-    ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/SlackPayload.png?raw=true)
+     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/SlackPayload.png?raw=true)
     
     
     
