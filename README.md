@@ -37,3 +37,4 @@ Download the dev branch, build and deploy it to the azure portal. Copy the azure
 
 ## Further Development
 Whatsapp Webhooks Integration
+MS Teams Integration
