@@ -36,5 +36,5 @@ Currently it supports Slack client only. When a channel member slacks a formatte
 Download the dev branch, build and deploy it to the azure portal. Copy the azure function url and configure slack to start using the functionality,
 
 ## Further Development
-  Whatsapp Webhooks Integration
-  MS Teams Integration
+  - Whatsapp Webhooks Integration
+  - MS Teams Integration
