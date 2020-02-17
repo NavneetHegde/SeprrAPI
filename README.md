@@ -12,22 +12,24 @@ Currently it supports Slack client only. When a channel member slacks a formatte
   
   1. Add Outgoing WebHooks : Add new outgoing webhook to slack to communicate with azure function via trigger
 
-     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/AddWebHookApp.png?raw=true)
+     ![Image of AddWebhook](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/AddWebHookApp.png?raw=true)
       
   2. Configure Azure Function : Set the Url as copied from azure portal where fucntion is deployed 
     
-     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureWebHook.png?raw=true)
+     ![Image of Webhook](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureWebHook.png?raw=true)
  
   3. Configure Slack Trigger : This keyword will be used as a trigger from slack app to invoke azure function via webhook
     
-     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureTrigger.png?raw=true)
+     ![Image of Trigger](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/ConfigureTrigger.png?raw=true)
       
   4. Request azure function from slack : Channel members can request next available trains from slack using the trigger from configured 
      channel to view the next three available trains on the specific route.
     
-     ![Image of Yaktocat](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/SlackPayload.png?raw=true)
+     ![Image of Payload](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/SlackPayload.png?raw=true)
     
-    
+  5. Error result : Error response received from azure function
+  
+     ![Image of Error](https://github.com/NavneetHegde/SeprrAPI/blob/dev/SeprrAPI/Images/Error.png?raw=true)
   
 ## Building & Running
 Download the dev branch, build and deploy it to the azure portal. Copy the azure function url and configure slack to start using the functionality,
